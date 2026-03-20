@@ -3,6 +3,8 @@
 
 #include "GasCourse/Public/Characters/CC_BaseCharacter.h"
 
+#include "GameplayAbilitySpec.h"
+#include "AbilitySystemComponent.h"
 
 // Sets default values
 ACC_BaseCharacter::ACC_BaseCharacter()
@@ -17,4 +19,15 @@ ACC_BaseCharacter::ACC_BaseCharacter()
 UAbilitySystemComponent* ACC_BaseCharacter::GetAbilitySystemComponent() const
 {
 	return nullptr;
+}
+
+void ACC_BaseCharacter::GiveStatupAbilities()
+{
+	if (!IsValid(GetAbilitySystemComponent()))return;
+
+	for (const auto& Ability : StartupAbilities)
+	{
+		FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(Ability);
+		GetAbilitySystemComponent()->GiveAbility(AbilitySpec);
+	}
 }

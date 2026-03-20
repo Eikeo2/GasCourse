@@ -74,10 +74,11 @@ UAbilitySystemComponent* ACC_PlayCharacter::GetAbilitySystemComponent() const
 void ACC_PlayCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
-
-	if (!IsValid(GetAbilitySystemComponent()))return;
+	//接下来代码只会在服务器执行
+	if (!IsValid(GetAbilitySystemComponent()) || !HasAuthority())return;
 
 	GetAbilitySystemComponent()->InitAbilityActorInfo(this, GetPlayerState<APlayerState>());
+	GiveStatupAbilities();
 }
 
 // Replication callback called when the PlayerState is replicated.
