@@ -2,11 +2,13 @@
 
 
 #include "GasCourse/Public/Characters/CC_PlayCharacter.h"
+
+#include "AbilitySystemComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
-
+#include "Player/CC_PlayerState.h"
 
 
 ACC_PlayCharacter::ACC_PlayCharacter()
@@ -54,4 +56,37 @@ ACC_PlayCharacter::ACC_PlayCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	// 禁用相机使用Pawn控制旋转（由弹簧臂处理）
 	FollowCamera->bUsePawnControlRotation = false;
+}
+
+UAbilitySystemComponent* ACC_PlayCharacter::GetAbilitySystemComponent() const
+{
+	ACC_PlayerState* CCPlayerState = Cast<ACC_PlayerState>(GetPlayerState());
+	if (!IsValid(CCPlayerState))
+	{
+		return nullptr;
+	}
+
+	return CCPlayerState->GetAbilitySystemComponent();
+}
+
+// Called when the character is possessed by a controller.
+// Initializes the ability system component with the actor and player state information.
+void ACC_PlayCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+	if (!IsValid(GetAbilitySystemComponent()))return;
+
+	GetAbilitySystemComponent()->InitAbilityActorInfo(this, GetPlayerState<APlayerState>());
+}
+
+// Replication callback called when the PlayerState is replicated.
+// Ensures the ability system component is properly initialized with the new player state.
+void ACC_PlayCharacter::OnRep_PlayerState()
+{
+	Super::OnRep_PlayerState();
+
+	if (!IsValid(GetAbilitySystemComponent()))return;
+
+	GetAbilitySystemComponent()->InitAbilityActorInfo(this, GetPlayerState<APlayerState>());
 }

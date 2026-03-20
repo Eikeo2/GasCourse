@@ -9,35 +9,36 @@
 void ACC_PlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
-	 
-	UEnhancedInputLocalPlayerSubsystem* InputSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer());
-	if (!IsValid(InputSubsystem)) return ;
-	
-	for(UInputMappingContext* Context : InputMappingContexts)
+
+	UEnhancedInputLocalPlayerSubsystem* InputSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(
+		GetLocalPlayer());
+	if (!IsValid(InputSubsystem)) return;
+
+	for (UInputMappingContext* Context : InputMappingContexts)
 	{
 		InputSubsystem->AddMappingContext(Context, 0);
 	}
 	UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent);
-	if (!IsValid(EnhancedInputComponent)) return ;
-	
+	if (!IsValid(EnhancedInputComponent)) return;
+
 	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ThisClass::Jump);
 	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ThisClass::StopJumping);
 	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ThisClass::Move);
 	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ThisClass::Look);
-
+	EnhancedInputComponent->BindAction(PrimaryAction, ETriggerEvent::Started, this, &ThisClass::Primary);
 }
 
 void ACC_PlayerController::Jump()
 {
 	if (!IsValid(GetCharacter()))return;
-	
+
 	GetCharacter()->Jump();
 }
 
 void ACC_PlayerController::StopJumping()
 {
 	if (!IsValid(GetCharacter()))return;
-	
+
 	GetCharacter()->StopJumping();
 }
 
@@ -64,3 +65,7 @@ void ACC_PlayerController::Look(const FInputActionValue& Value)
 	AddPitchInput(LookAxisVector.Y);
 }
 
+void ACC_PlayerController::Primary()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Primary Action Triggered"));
+}

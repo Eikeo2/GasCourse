@@ -9,8 +9,12 @@ ACC_BaseCharacter::ACC_BaseCharacter()
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
-	
+
 	//服务器上骨骼是否刷新
-	 GetMesh()->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
-	
+	GetMesh()->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
+}
+
+UAbilitySystemComponent* ACC_BaseCharacter::GetAbilitySystemComponent() const
+{
+	return nullptr;
 }
