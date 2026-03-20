@@ -76,8 +76,8 @@ void ACC_PlayCharacter::PossessedBy(AController* NewController)
 	Super::PossessedBy(NewController);
 	//接下来代码只会在服务器执行
 	if (!IsValid(GetAbilitySystemComponent()) || !HasAuthority())return;
-
-	GetAbilitySystemComponent()->InitAbilityActorInfo(this, GetPlayerState<APlayerState>());
+	//这里参数反了会出bug
+	GetAbilitySystemComponent()->InitAbilityActorInfo(GetPlayerState(), this);
 	GiveStatupAbilities();
 }
 
@@ -89,5 +89,5 @@ void ACC_PlayCharacter::OnRep_PlayerState()
 
 	if (!IsValid(GetAbilitySystemComponent()))return;
 
-	GetAbilitySystemComponent()->InitAbilityActorInfo(this, GetPlayerState<APlayerState>());
+	GetAbilitySystemComponent()->InitAbilityActorInfo(GetPlayerState(), this);
 }
