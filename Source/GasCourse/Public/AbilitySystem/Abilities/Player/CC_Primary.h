@@ -15,10 +15,16 @@ class GASCOURSE_API UCC_Primary : public UCC_GameplayAbility
 	GENERATED_BODY()
 
 public:
+	//执行重叠测试获取获取重叠actor
 	UFUNCTION(BlueprintCallable, Category = "Crash|Abilities")
-	void HitBoxOverlapTest();
+	TArray<AActor*> HitBoxOverlapTest();
+
+	//向数组actor发送HitReaction事件
+	UFUNCTION(BlueprintCallable, Category = "Crash|Abilities")
+	void SendHitReactEventToActors(const TArray<AActor*>& ActorsHit);
 
 private:
+	void DrawHixBoxOverlapDebugs(const TArray<FOverlapResult>& OverlapResults, const FVector& HitBoxLocation) const;
 	//碰撞半径
 	UPROPERTY(EditDefaultsOnly, Category = "Crash|Abilities")
 	float HitBoxRadius = 100.0f;
