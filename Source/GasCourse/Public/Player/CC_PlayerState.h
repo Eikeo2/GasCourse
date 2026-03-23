@@ -8,6 +8,7 @@
 
 #include "CC_PlayerState.generated.h"
 
+class UAttributeSet;
 class UAbilitySystemComponent;
 
 UCLASS()
@@ -18,8 +19,12 @@ class GASCOURSE_API ACC_PlayerState : public APlayerState, public IAbilitySystem
 public:
 	ACC_PlayerState();
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	UAttributeSet* GetAttributeSet() const { return AttributeSet; }
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Crash|Abilities")
 	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
+
+	UPROPERTY()
+	TObjectPtr<UAttributeSet> AttributeSet;
 };

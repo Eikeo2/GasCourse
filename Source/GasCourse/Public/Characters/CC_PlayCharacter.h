@@ -17,6 +17,7 @@ class GASCOURSE_API ACC_PlayCharacter : public ACC_BaseCharacter
 public:
 	ACC_PlayCharacter();
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	virtual UAttributeSet* GetAttributeSet() const override;
 	//被附身
 	virtual void PossessedBy(AController* NewController) override;
 	//第一次复制时

@@ -61,12 +61,17 @@ ACC_PlayCharacter::ACC_PlayCharacter()
 UAbilitySystemComponent* ACC_PlayCharacter::GetAbilitySystemComponent() const
 {
 	ACC_PlayerState* CCPlayerState = Cast<ACC_PlayerState>(GetPlayerState());
-	if (!IsValid(CCPlayerState))
-	{
-		return nullptr;
-	}
+	if (!IsValid(CCPlayerState))return nullptr;
 
 	return CCPlayerState->GetAbilitySystemComponent();
+}
+
+UAttributeSet* ACC_PlayCharacter::GetAttributeSet() const
+{
+	ACC_PlayerState* CCPlayerState = Cast<ACC_PlayerState>(GetPlayerState());
+	if (!IsValid(CCPlayerState))return nullptr;
+
+	return CCPlayerState->GetAttributeSet();
 }
 
 // Called when the character is possessed by a controller.
@@ -78,7 +83,9 @@ void ACC_PlayCharacter::PossessedBy(AController* NewController)
 	if (!IsValid(GetAbilitySystemComponent()) || !HasAuthority())return;
 	//这里参数反了会出bug
 	GetAbilitySystemComponent()->InitAbilityActorInfo(GetPlayerState(), this);
+	OnASCInitialized.Broadcast(GetAbilitySystemComponent(), GetAttributeSet());
 	GiveStatupAbilities();
+	InitializeAttributes();
 }
 
 // Replication callback called when the PlayerState is replicated.
@@ -90,4 +97,5 @@ void ACC_PlayCharacter::OnRep_PlayerState()
 	if (!IsValid(GetAbilitySystemComponent()))return;
 
 	GetAbilitySystemComponent()->InitAbilityActorInfo(GetPlayerState(), this);
+	OnASCInitialized.Broadcast(GetAbilitySystemComponent(), GetAttributeSet());
 }
