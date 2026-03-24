@@ -8,6 +8,7 @@
 
 #include "CC_BaseCharacter.generated.h"
 
+struct  FOnAttributeChangeData;
 class UAttributeSet;
 class UGameplayEffect;
 class UGameplayAbility;
@@ -22,6 +23,7 @@ class GASCOURSE_API ACC_BaseCharacter : public ACharacter, public IAbilitySystem
 
 public:
 	ACC_BaseCharacter();
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	virtual UAttributeSet* GetAttributeSet() const { return nullptr; }
 
@@ -29,14 +31,25 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FASCInitialized OnASCInitialized;
 
+	bool IsAlive() const { return bAlive; }
+	void SetAlive(bool bAliveStatus) { bAlive = bAliveStatus; }
+
 protected:
 	void GiveStatupAbilities();
 	void InitializeAttributes() const;
-
+	
+	void OnHealthChanged(const FOnAttributeChangeData& AttributeChangeData);
+	virtual void HandleDeath();
+	
+	UFUNCTION(BlueprintCallable, Category = "Crash|Death")
+	virtual void HandleRespawn();
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Crash|Abilities")
 	TArray<TSubclassOf<UGameplayAbility>> StartupAbilities;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Crash|Effects")
 	TSubclassOf<UGameplayEffect> InitializeAttributesEffect;
+
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess="true"), Replicated)
+	bool bAlive = true;
 };

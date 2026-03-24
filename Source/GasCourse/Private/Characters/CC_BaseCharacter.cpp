@@ -5,6 +5,7 @@
 
 #include "GameplayAbilitySpec.h"
 #include "AbilitySystemComponent.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 ACC_BaseCharacter::ACC_BaseCharacter()
@@ -14,6 +15,14 @@ ACC_BaseCharacter::ACC_BaseCharacter()
 
 	//服务器上骨骼是否刷新
 	GetMesh()->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
+}
+
+void ACC_BaseCharacter::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	
+	//这个变量需要在服务器和客户端之间同步
+	DOREPLIFETIME(ACC_BaseCharacter, bAlive);
 }
 
 UAbilitySystemComponent* ACC_BaseCharacter::GetAbilitySystemComponent() const
@@ -40,4 +49,27 @@ void ACC_BaseCharacter::InitializeAttributes() const
 	FGameplayEffectSpecHandle SpecHandle = GetAbilitySystemComponent()->MakeOutgoingSpec(
 		InitializeAttributesEffect, 1.f, ContextHandle);
 	GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+}
+
+void ACC_BaseCharacter::OnHealthChanged(const FOnAttributeChangeData& AttributeChangeData)
+{
+	if (AttributeChangeData.NewValue <= 0.f)
+	{
+		HandleDeath();
+	}
+}
+
+void ACC_BaseCharacter::HandleDeath()
+{
+	bAlive=false;
+	
+	if (IsValid(GEngine))
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, FString::Printf(TEXT("%s has died!"), *GetName()));
+	}
+}
+
+void ACC_BaseCharacter::HandleRespawn()
+{
+	bAlive = true;
 }
