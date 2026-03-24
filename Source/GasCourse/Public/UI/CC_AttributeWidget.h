@@ -12,7 +12,7 @@
  * 
  */
 UCLASS()
-class GASCOURSE_API UCC_AttributeWidget : public UUserWidget
+class GASCOURSE_API UCC_AttributeWidget : public UUserWidget 
 {
 	GENERATED_BODY()
 

@@ -18,12 +18,14 @@ void UCC_WidgetComponent::BeginPlay()
 	//确认初始化属性集并且拥有第一个游戏效果
 	if (!IsASCInitialized())
 	{
+		//if not Initialized如果 ASC 还没初始化，就先注册一个委托，添加监听，等 ASC 初始化完成的时候，请自动在this（当前类实例指针）上调用我这个类里的OnASCInitialized函数，即UCC_AttributeSet::PostGameplayEffectExecute中OnAttributesInitialized.Broadcast()广播时，OnASCInitialized函数会被调用，从而完成对 ASC 初始化完成事件的响应。
 		CrashCharacter->OnASCInitialized.AddDynamic(this, &ThisClass::OnASCInitialized);
 		return;
 	}
 	InitializeAttributeDelegate();
 }
 
+//初始化能力系统相关数据：获取角色、属性集和能力系统组件的指针
 void UCC_WidgetComponent::InitAbilitySystemData()
 {
 	CrashCharacter = Cast<ACC_BaseCharacter>(GetOwner());
@@ -48,7 +50,7 @@ void UCC_WidgetComponent::InitializeAttributeDelegate()
 	}
 }
 
-//
+//这个函数的作用是将一个 UWidget 对象绑定到特定的属性变化上，以便在属性值发生变化时更新 UI
 void UCC_WidgetComponent::BindWidgetToAttributeChanges(UWidget* WidgetObject,
                                                        const TTuple<FGameplayAttribute, FGameplayAttribute>& Pair) const
 {

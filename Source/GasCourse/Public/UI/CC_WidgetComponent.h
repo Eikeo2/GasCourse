@@ -25,6 +25,7 @@ protected:
 	TMap<FGameplayAttribute, FGameplayAttribute> AttributeMap;
 
 private:
+	//weak ptr 弱引用意味着TWeakObjectPtr不会阻止其引用的UObject被GC销毁，因此在使用之前需要检查它是否仍然有效。这对于避免悬挂指针和内存泄漏非常有用，特别是在复杂的对象关系中。
 	TWeakObjectPtr<ACC_BaseCharacter> CrashCharacter;
 	TWeakObjectPtr<UCC_AbilitySystemComponent> AbilitySystemComponent;
 	TWeakObjectPtr<UCC_AttributeSet> AttributeSet;
