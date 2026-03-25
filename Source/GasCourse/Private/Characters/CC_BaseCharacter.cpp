@@ -73,3 +73,14 @@ void ACC_BaseCharacter::HandleRespawn()
 {
 	bAlive = true;
 }
+
+void ACC_BaseCharacter::ResetAttribute()
+{
+	checkf(IsValid(ResetAttributesEffect), TEXT("ResetAttributesEffect not set."));
+
+	//效果上下文句柄 游戏效果句柄
+	FGameplayEffectContextHandle ContextHandle = GetAbilitySystemComponent()->MakeEffectContext();
+	FGameplayEffectSpecHandle SpecHandle = GetAbilitySystemComponent()->MakeOutgoingSpec(
+		ResetAttributesEffect, 1.f, ContextHandle);
+	GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+}

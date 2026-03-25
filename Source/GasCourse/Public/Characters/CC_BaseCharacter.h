@@ -43,6 +43,9 @@ protected:
 	
 	UFUNCTION(BlueprintCallable, Category = "Crash|Death")
 	virtual void HandleRespawn();
+	
+	UFUNCTION(BlueprintCallable, Category = "Crash|Death")
+	void ResetAttribute();
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Crash|Abilities")
 	TArray<TSubclassOf<UGameplayAbility>> StartupAbilities;
@@ -50,6 +53,9 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Crash|Effects")
 	TSubclassOf<UGameplayEffect> InitializeAttributesEffect;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Crash|Effects")
+	TSubclassOf<UGameplayEffect> ResetAttributesEffect;
+	
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess="true"), Replicated)
 	bool bAlive = true;
 };
