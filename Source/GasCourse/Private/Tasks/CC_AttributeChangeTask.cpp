@@ -4,6 +4,7 @@
 #include "Tasks/CC_AttributeChangeTask.h"
 #include "AbilitySystemComponent.h"
 
+//可暴露引脚的蓝图函数
 UCC_AttributeChangeTask* UCC_AttributeChangeTask::ListenForAttributeChange(
 	UAbilitySystemComponent* AbilitySystemComponent, FGameplayAttribute Attribute)
 {

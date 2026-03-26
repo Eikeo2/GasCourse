@@ -57,6 +57,8 @@ ACC_PlayCharacter::ACC_PlayCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	// 禁用相机使用Pawn控制旋转（由弹簧臂处理）
 	FollowCamera->bUsePawnControlRotation = false;
+
+	Tags.Add(CrashTags::Player);
 }
 
 UAbilitySystemComponent* ACC_PlayCharacter::GetAbilitySystemComponent() const
@@ -87,11 +89,12 @@ void ACC_PlayCharacter::PossessedBy(AController* NewController)
 	OnASCInitialized.Broadcast(GetAbilitySystemComponent(), GetAttributeSet());
 	GiveStatupAbilities();
 	InitializeAttributes();
-	
+
 	UCC_AttributeSet* CC_AttributeSet = Cast<UCC_AttributeSet>(GetAttributeSet());
 	if (!IsValid(CC_AttributeSet)) return;
-	
-	GetAbilitySystemComponent()->GetGameplayAttributeValueChangeDelegate(CC_AttributeSet->GetHealthAttribute()).AddUObject(this, &ThisClass::OnHealthChanged);
+
+	GetAbilitySystemComponent()->GetGameplayAttributeValueChangeDelegate(CC_AttributeSet->GetHealthAttribute()).
+	                             AddUObject(this, &ThisClass::OnHealthChanged);
 }
 
 // Replication callback called when the PlayerState is replicated.
@@ -104,9 +107,10 @@ void ACC_PlayCharacter::OnRep_PlayerState()
 
 	GetAbilitySystemComponent()->InitAbilityActorInfo(GetPlayerState(), this);
 	OnASCInitialized.Broadcast(GetAbilitySystemComponent(), GetAttributeSet());
-	
+
 	UCC_AttributeSet* CC_AttributeSet = Cast<UCC_AttributeSet>(GetAttributeSet());
 	if (!IsValid(CC_AttributeSet)) return;
-	
-	GetAbilitySystemComponent()->GetGameplayAttributeValueChangeDelegate(CC_AttributeSet->GetHealthAttribute()).AddUObject(this, &ThisClass::OnHealthChanged);
+
+	GetAbilitySystemComponent()->GetGameplayAttributeValueChangeDelegate(CC_AttributeSet->GetHealthAttribute()).
+	                             AddUObject(this, &ThisClass::OnHealthChanged);
 }

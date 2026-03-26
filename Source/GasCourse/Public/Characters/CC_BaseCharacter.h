@@ -8,7 +8,12 @@
 
 #include "CC_BaseCharacter.generated.h"
 
-struct  FOnAttributeChangeData;
+namespace CrashTags
+{
+	extern GASCOURSE_API const FName Player;
+}
+
+struct FOnAttributeChangeData;
 class UAttributeSet;
 class UGameplayEffect;
 class UGameplayAbility;
@@ -37,15 +42,16 @@ public:
 protected:
 	void GiveStatupAbilities();
 	void InitializeAttributes() const;
-	
+
 	void OnHealthChanged(const FOnAttributeChangeData& AttributeChangeData);
 	virtual void HandleDeath();
-	
+
 	UFUNCTION(BlueprintCallable, Category = "Crash|Death")
 	virtual void HandleRespawn();
-	
+
 	UFUNCTION(BlueprintCallable, Category = "Crash|Death")
 	void ResetAttribute();
+
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Crash|Abilities")
 	TArray<TSubclassOf<UGameplayAbility>> StartupAbilities;
@@ -55,7 +61,7 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Crash|Effects")
 	TSubclassOf<UGameplayEffect> ResetAttributesEffect;
-	
+
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess="true"), Replicated)
 	bool bAlive = true;
 };

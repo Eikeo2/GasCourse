@@ -52,6 +52,7 @@ void UCC_AbilitySystemComponent::AddToAbilityLevel(TSubclassOf<UGameplayAbility>
 	}
 }
 
+//自动激活能力CCTags::CCAbilities::ActivateOnGiven
 void UCC_AbilitySystemComponent::HandleAutoActivatedAbility(const FGameplayAbilitySpec& AbilitySpec)
 {
 	if (!IsValid(AbilitySpec.Ability)) return;

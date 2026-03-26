@@ -16,16 +16,33 @@ enum class EHitDirection : uint8
 	Back
 };
 
+//存储最近结果（actor，distance）
+USTRUCT(BlueprintType)
+struct FClosestActorWithTagResult
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadWrite)
+	TWeakObjectPtr<AActor> Actor;
+
+	UPROPERTY(BlueprintReadWrite)
+	float Distance{0.f};
+};
 
 UCLASS()
 class GASCOURSE_API UCC_BlueprintLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
-public:
 
+public:
 	UFUNCTION(BlueprintPure)
 	static EHitDirection GetHitDirection(const FVector& TargetForward, const FVector& ToInstigator);
 
 	UFUNCTION(BlueprintPure)
 	static FName GetHitDirectionName(const EHitDirection& HitDirection);
+
+	//find closet actor,result with specific tag
+	UFUNCTION(BlueprintCallable)
+	static FClosestActorWithTagResult FindClosestActorWithTag(const UObject* WorldContextObject, const FVector& Origin,
+	                                                          const FName& Tag);
 };

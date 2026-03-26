@@ -7,6 +7,11 @@
 #include "AbilitySystemComponent.h"
 #include "Net/UnrealNetwork.h"
 
+namespace CrashTags
+{
+	const FName Player = FName("Player");
+}
+
 // Sets default values
 ACC_BaseCharacter::ACC_BaseCharacter()
 {
@@ -20,7 +25,7 @@ ACC_BaseCharacter::ACC_BaseCharacter()
 void ACC_BaseCharacter::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	
+
 	//这个变量需要在服务器和客户端之间同步
 	DOREPLIFETIME(ACC_BaseCharacter, bAlive);
 }
@@ -61,8 +66,8 @@ void ACC_BaseCharacter::OnHealthChanged(const FOnAttributeChangeData& AttributeC
 
 void ACC_BaseCharacter::HandleDeath()
 {
-	bAlive=false;
-	
+	bAlive = false;
+
 	if (IsValid(GEngine))
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, FString::Printf(TEXT("%s has died!"), *GetName()));
