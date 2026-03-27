@@ -6,6 +6,7 @@
 #include "AbilitySystem/CC_AttributeSet.h"
 #include "Runtime/AIModule/Classes/AIController.h"
 
+
 ACC_EnemyCharacter::ACC_EnemyCharacter()
 {
 	PrimaryActorTick.bCanEverTick = false;
@@ -44,19 +45,20 @@ void ACC_EnemyCharacter::BeginPlay()
 	GiveStatupAbilities();
 	InitializeAttributes();
 	//UE_LOG(LogTemp,Warning,TEXT("Enemy Character GiveStatupAbilities"));
-	
+
 	// process death
 	UCC_AttributeSet* CC_AttributeSet = Cast<UCC_AttributeSet>(GetAttributeSet());
 	if (!IsValid(CC_AttributeSet)) return;
-	
-	GetAbilitySystemComponent()->GetGameplayAttributeValueChangeDelegate(CC_AttributeSet->GetHealthAttribute()).AddUObject(this, &ThisClass::OnHealthChanged);
+
+	GetAbilitySystemComponent()->GetGameplayAttributeValueChangeDelegate(CC_AttributeSet->GetHealthAttribute()).
+	                             AddUObject(this, &ThisClass::OnHealthChanged);
 }
 
 void ACC_EnemyCharacter::HandleDeath()
 {
 	Super::HandleDeath();
-	
-	AAIController* AIController =GetController<AAIController>();
+
+	AAIController* AIController = GetController<AAIController>();
 	if (!IsValid(AIController)) return;
 	AIController->StopMovement();
 }

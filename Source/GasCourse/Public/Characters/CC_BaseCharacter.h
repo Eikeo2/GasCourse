@@ -31,13 +31,22 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	virtual UAttributeSet* GetAttributeSet() const { return nullptr; }
-
+	
+	bool IsAlive() const { return bAlive; }
+	void SetAlive(bool bAliveStatus) { bAlive = bAliveStatus; }
+	
 	//声明这个委托作为“广播站”，当ASC和AS准备就绪时，广播给所有订阅者（如UI组件）
 	UPROPERTY(BlueprintAssignable)
 	FASCInitialized OnASCInitialized;
+	
+	UFUNCTION(BlueprintCallable, Category = "Crash|Death")
+	virtual void HandleRespawn();
 
-	bool IsAlive() const { return bAlive; }
-	void SetAlive(bool bAliveStatus) { bAlive = bAliveStatus; }
+	UFUNCTION(BlueprintCallable, Category = "Crash|Death")
+	void ResetAttribute();
+	
+	UFUNCTION(BlueprintImplementableEvent)
+	void RotateToTarget(AActor* RotateTarget);
 
 protected:
 	void GiveStatupAbilities();
@@ -45,12 +54,6 @@ protected:
 
 	void OnHealthChanged(const FOnAttributeChangeData& AttributeChangeData);
 	virtual void HandleDeath();
-
-	UFUNCTION(BlueprintCallable, Category = "Crash|Death")
-	virtual void HandleRespawn();
-
-	UFUNCTION(BlueprintCallable, Category = "Crash|Death")
-	void ResetAttribute();
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Crash|Abilities")
