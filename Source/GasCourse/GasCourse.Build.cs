@@ -20,7 +20,7 @@ public class GasCourse : ModuleRules
 			
 		});
 
-		PrivateDependencyModuleNames.AddRange(new string[] {  });
+		PrivateDependencyModuleNames.AddRange(new string[] { "AIModule" });
 
 	}
 }
