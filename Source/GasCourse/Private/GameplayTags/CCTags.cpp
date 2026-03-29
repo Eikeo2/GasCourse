@@ -4,9 +4,10 @@ namespace CCTags
 {
 	namespace SetByCaller
 	{
-		UE_DEFINE_GAMEPLAY_TAG_COMMENT(Projectile, "CCTags.SetByCaller.Projectile", "Tag for the Tertiary Tag for Set by Caller Magnitude for Projectiles");
+		UE_DEFINE_GAMEPLAY_TAG_COMMENT(Projectile, "CCTags.SetByCaller.Projectile",
+		                               "Tag for the Tertiary Tag for Set by Caller Magnitude for Projectiles");
 	}
-	
+
 	namespace CCAbilities
 	{
 		UE_DEFINE_GAMEPLAY_TAG_COMMENT(ActivateOnGiven, "CCTags.CCAbilities.ActivateOnGiven",
@@ -31,6 +32,8 @@ namespace CCTags
 			UE_DEFINE_GAMEPLAY_TAG_COMMENT(HitReact, "CCTags.Events.Enemy.HitReact", "Tag for the Enemy React Event");
 			UE_DEFINE_GAMEPLAY_TAG_COMMENT(EndAttack, "CCTags.Events.Enemy.EndAttack",
 			                               "Tag for the Enemy Ending an Attack")
+			UE_DEFINE_GAMEPLAY_TAG_COMMENT(MeleeTraceHit, "CCTags.Events.Enemy.MeleeTraceHit",
+			                               "Tag for the Enemy Melee Trace Hit")
 		}
 	}
 }
