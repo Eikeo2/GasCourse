@@ -8,6 +8,7 @@
 #include "Characters/CC_PlayCharacter.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "GameplayTags/CCTags.h"
+#include "Utils/CC_BlueprintLibrary.h"
 
 ACC_Projectile::ACC_Projectile()
 {
@@ -28,14 +29,19 @@ void ACC_Projectile::NotifyActorBeginOverlap(AActor* OtherActor)
 	UAbilitySystemComponent* AbilitySystemComponent = PlayerCharacter->GetAbilitySystemComponent();
 	if (!IsValid(AbilitySystemComponent) || !HasAuthority()) return;
 
-	FGameplayEffectContextHandle ContextHandle =  AbilitySystemComponent->MakeEffectContext();
-	FGameplayEffectSpecHandle SpecHandle = AbilitySystemComponent->MakeOutgoingSpec(DamageEffect, 1.f, ContextHandle);
-
-	//Use the Damage variable for the amount of damage to cause.
-	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(SpecHandle, CCTags::SetByCaller::Projectile, Damage);
+	// FGameplayEffectContextHandle ContextHandle =  AbilitySystemComponent->MakeEffectContext();
+	// FGameplayEffectSpecHandle SpecHandle = AbilitySystemComponent->MakeOutgoingSpec(DamageEffect, 1.f, ContextHandle);
+	//
+	// //Use the Damage variable for the amount of damage to cause.
+	// UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(SpecHandle, CCTags::SetByCaller::Projectile, Damage);
+	//
+	// AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+	FGameplayEventData Payload;
+	Payload.Instigator = GetOwner();
+	Payload.Target = PlayerCharacter;
 	
-	AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
-
+	UCC_BlueprintLibrary::SendDamageEventToPlayer(PlayerCharacter, DamageEffect, Payload, CCTags::SetByCaller::Projectile, Damage);
+	
 	SpawnImpactEffects();
 	Destroy();
 }
