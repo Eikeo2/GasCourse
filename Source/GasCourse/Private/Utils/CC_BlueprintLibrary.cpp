@@ -98,7 +98,7 @@ FClosestActorWithTagResult UCC_BlueprintLibrary::FindClosestActorWithTag(const U
 // @param DataTag 在效果规范中分配伤害大小的游戏标签。
 // @param Damage 要应用的伤害量。
 void UCC_BlueprintLibrary::SendDamageEventToPlayer(AActor* Target, const TSubclassOf<UGameplayEffect>& DamageEffect,
-	const FGameplayEventData& Payload, const FGameplayTag& DataTag, float Damage)
+	UPARAM(ref) FGameplayEventData& Payload, const FGameplayTag& DataTag, float Damage,UObject* OptionalParticleSystem)
 {
 	ACC_BaseCharacter* PlayerCharacter = Cast<ACC_BaseCharacter>(Target);
 	if (!IsValid(PlayerCharacter)) return;
@@ -110,6 +110,7 @@ void UCC_BlueprintLibrary::SendDamageEventToPlayer(AActor* Target, const TSubcla
 	const bool bLethal = AttributeSet->GetHealth() - Damage <= 0.f;
 	const FGameplayTag EventTag = bLethal ? CCTags::Events::Player::Death : CCTags::Events::Player::HitReact;
 
+	Payload.OptionalObject = OptionalParticleSystem;
 	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(PlayerCharacter, EventTag, Payload);
 
 	UAbilitySystemComponent* TargetASC = PlayerCharacter->GetAbilitySystemComponent();
