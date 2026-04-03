@@ -6,6 +6,7 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystem/CC_AttributeSet.h"
 #include "Characters/CC_BaseCharacter.h"
+#include "Engine/OverlapResult.h"
 #include "GameplayTags/CCTags.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -122,4 +123,70 @@ void UCC_BlueprintLibrary::SendDamageEventToPlayer(AActor* Target, const TSubcla
 	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(SpecHandle, DataTag, -Damage);
 
 	TargetASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+}
+
+TArray<AActor*> UCC_BlueprintLibrary::HitBoxOverlapTest(AActor* AvatarActor, float HitBoxRadius, float HitBoxForwardOffset, float HitBoxElevationOffset, bool bDrawDebugs)
+{
+	if (!IsValid(AvatarActor))return TArray<AActor*>();
+	//初始化忽略列表：确保施法者自己不会被自己的攻击打中
+	// Ensure that the overlap test ignores the Avatar Actor 
+	FCollisionQueryParams QueryParams; //设置碰撞查询参数
+	QueryParams.AddIgnoredActor(AvatarActor);
+
+	//碰撞响应参数
+	FCollisionResponseParams ResponseParams;
+	ResponseParams.CollisionResponse.SetAllChannels(ECR_Ignore); //默认忽略所有碰撞通道
+	ResponseParams.CollisionResponse.SetResponse(ECC_Pawn, ECR_Block); //仅对 Pawn 通道（通常是角色/怪物）产生阻挡/重叠响应
+
+	//定义检测形状与结果容器
+	TArray<FOverlapResult> OverlapResults;
+	FCollisionShape Sphere = FCollisionShape::MakeSphere(HitBoxRadius);
+
+	//计算 HitBox 的空间位置
+	const FVector Forward = AvatarActor->GetActorForwardVector() * HitBoxForwardOffset;
+	const FVector HitBoxLocation = AvatarActor->GetActorLocation() + Forward + FVector(
+		0.f, 0.f, HitBoxElevationOffset);
+
+	//执行物理场景重叠检测 使用可见性通道进行初步扫描
+	UWorld* World=GEngine->GetWorldFromContextObject(AvatarActor,EGetWorldErrorMode::LogAndReturnNull);
+	if (!IsValid(World)) return TArray<AActor*>();
+	World->OverlapMultiByChannel(OverlapResults, HitBoxLocation, FQuat::Identity, ECC_Visibility, Sphere,
+									  QueryParams, ResponseParams);
+
+	TArray<AActor*> ActorsHit;
+	for (const FOverlapResult& Result : OverlapResults)
+	{
+		ACC_BaseCharacter* BaseCharacter = Cast<ACC_BaseCharacter>(Result.GetActor());
+		if (!IsValid(BaseCharacter)) continue;
+		if (!BaseCharacter->IsAlive()) continue;
+		ActorsHit.AddUnique(Result.GetActor());
+	}
+
+
+	if (bDrawDebugs)
+	{
+		DrawHixBoxOverlapDebugs(AvatarActor,OverlapResults, HitBoxLocation,HitBoxRadius);
+	}
+
+	return ActorsHit;
+}
+
+void UCC_BlueprintLibrary::DrawHixBoxOverlapDebugs(const UObject* WorldContextObject,const TArray<FOverlapResult>& OverlapResults,
+	const FVector& HitBoxLocation,float HitBoxRadius)
+{
+	UWorld* World=GEngine->GetWorldFromContextObject(WorldContextObject,EGetWorldErrorMode::LogAndReturnNull);
+	if (!IsValid(World)) return ;
+	//绘制红色的攻击判定球体
+	DrawDebugSphere(World, HitBoxLocation, HitBoxRadius, 16, FColor::Red, false, 3.f);
+
+	//遍历被击中的目标，在它们头顶（Z轴+100）绘制绿色小球以确认命中
+	for (const FOverlapResult& Result : OverlapResults)
+	{
+		if (IsValid(Result.GetActor()))
+		{
+			FVector DebugLocation = Result.GetActor()->GetActorLocation();
+			DebugLocation.Z += 100.f;
+			DrawDebugSphere(World, DebugLocation, 30.f, 10, FColor::Green, false, 3.f);
+		}
+	}
 }

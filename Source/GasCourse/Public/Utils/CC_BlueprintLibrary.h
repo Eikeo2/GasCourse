@@ -35,6 +35,7 @@ class GASCOURSE_API UCC_BlueprintLibrary : public UBlueprintFunctionLibrary
 	GENERATED_BODY()
 
 public:
+	
 	UFUNCTION(BlueprintPure)
 	static EHitDirection GetHitDirection(const FVector& TargetForward, const FVector& ToInstigator);
 
@@ -47,4 +48,9 @@ public:
 	                                                          const FName& Tag);
 	UFUNCTION(BlueprintCallable)
 	static void SendDamageEventToPlayer(AActor* Target, const TSubclassOf<UGameplayEffect>& DamageEffect, UPARAM(ref) FGameplayEventData& Payload, const FGameplayTag& DataTag, float Damage,UObject* OptionalParticleSystem = nullptr);
+	
+	//执行重叠测试获取获取重叠actor
+	UFUNCTION(BlueprintCallable, Category = "Crash|Abilities")
+	static TArray<AActor*> HitBoxOverlapTest(AActor* AvatarActor, float HitBoxRadius, float HitBoxForwardOffset = 0.f, float HitBoxElevationOffset = 0.f, bool bDrawDebugs = false);
+	static void DrawHixBoxOverlapDebugs(const UObject* WorldContextObject,const TArray<FOverlapResult>& OverlapResults, const FVector& HitBoxLocation,float HitBoxRadius);
 };
