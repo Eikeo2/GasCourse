@@ -190,3 +190,50 @@ void UCC_BlueprintLibrary::DrawHixBoxOverlapDebugs(const UObject* WorldContextOb
 		}
 	}
 }
+
+TArray<AActor*> UCC_BlueprintLibrary::ApplyKnockback(AActor* AvatarActor, const TArray<AActor*>& HitActors,
+	float InnerRadius, float OuterRadius, float LaunchForceMagnitude, float RotationAngle, bool bDrawDebugs)
+{
+	for (AActor* HitActor : HitActors)
+	{
+		ACharacter* HitCharacter = Cast<ACharacter>(HitActor);
+		if (!IsValid(HitCharacter) || !IsValid(AvatarActor)) return TArray<AActor*>();
+
+		const FVector HitCharacterLocation = HitCharacter->GetActorLocation();
+		const FVector AvatarLocation = AvatarActor->GetActorLocation();
+
+		const FVector ToHitActor = HitCharacterLocation - AvatarLocation;
+		const float Distance = FVector::Dist(AvatarLocation, HitCharacterLocation);
+
+		float LaunchForce = 0.f;
+		if (Distance > OuterRadius) continue;
+		if (Distance <= InnerRadius)
+		{
+			LaunchForce = LaunchForceMagnitude;
+		}
+		else
+		{
+			const FVector2D FalloffRange(InnerRadius, OuterRadius); // input range
+			const FVector2D LaunchForceRange(LaunchForceMagnitude, 0.f); // output range
+			LaunchForce = FMath::GetMappedRangeValueClamped(FalloffRange, LaunchForceRange, Distance);
+		}
+		if (bDrawDebugs) GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, FString::Printf(TEXT("LaunchForce: %f"), LaunchForce));
+
+		FVector KnockbackForce = ToHitActor.GetSafeNormal();
+		KnockbackForce.Z = 0.f;
+		
+		// 计算一个垂直于KnockbackForce的右向量，并将KnockbackForce绕这个轴旋转指定的角度，以实现更自然的击退效果。
+		const FVector Right = KnockbackForce.RotateAngleAxis(90.f, FVector::UpVector);
+		//逆时针旋转回来 
+		KnockbackForce = KnockbackForce.RotateAngleAxis(-RotationAngle, Right) * LaunchForce;
+
+		if (bDrawDebugs)
+		{
+			UWorld* World = GEngine->GetWorldFromContextObject(AvatarActor, EGetWorldErrorMode::LogAndReturnNull);
+			DrawDebugDirectionalArrow(World, HitCharacterLocation, HitCharacterLocation + KnockbackForce, 100.f, FColor::Green, false, 3.f);
+		}
+
+		HitCharacter->LaunchCharacter(KnockbackForce, true, true);
+	}
+	return HitActors;
+}
