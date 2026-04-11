@@ -6,6 +6,7 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystem/CC_AttributeSet.h"
 #include "Characters/CC_BaseCharacter.h"
+#include "Characters/CC_EnemyCharacter.h"
 #include "Engine/OverlapResult.h"
 #include "GameplayTags/CCTags.h"
 #include "Kismet/GameplayStatics.h"
@@ -99,17 +100,31 @@ FClosestActorWithTagResult UCC_BlueprintLibrary::FindClosestActorWithTag(const U
 // @param DataTag 在效果规范中分配伤害大小的游戏标签。
 // @param Damage 要应用的伤害量。
 void UCC_BlueprintLibrary::SendDamageEventToPlayer(AActor* Target, const TSubclassOf<UGameplayEffect>& DamageEffect,
-	UPARAM(ref) FGameplayEventData& Payload, const FGameplayTag& DataTag, float Damage,UObject* OptionalParticleSystem)
+                                                   FGameplayEventData& Payload, const FGameplayTag& DataTag,
+                                                   float Damage, const FGameplayTag& EventTagOverride,
+                                                   UObject* OptionalParticleSystem)
 {
 	ACC_BaseCharacter* PlayerCharacter = Cast<ACC_BaseCharacter>(Target);
 	if (!IsValid(PlayerCharacter)) return;
 	if (!PlayerCharacter->IsAlive()) return;
+	FGameplayTag EventTag;
+	if (!EventTagOverride.MatchesTagExact(CCTags::None))
+	{
+		EventTag=EventTagOverride;
+	}
+	else
+	{
+		UCC_AttributeSet* AttributeSet = Cast<UCC_AttributeSet>(PlayerCharacter->GetAttributeSet());
+		if (!IsValid(AttributeSet)) return;
 
+		const bool bLethal = AttributeSet->GetHealth() - Damage <= 0.f;
+		EventTag = bLethal ? CCTags::Events::Player::Death : CCTags::Events::Player::HitReact;
+	}
 	UCC_AttributeSet* AttributeSet = Cast<UCC_AttributeSet>(PlayerCharacter->GetAttributeSet());
 	if (!IsValid(AttributeSet)) return;
 
 	const bool bLethal = AttributeSet->GetHealth() - Damage <= 0.f;
-	const FGameplayTag EventTag = bLethal ? CCTags::Events::Player::Death : CCTags::Events::Player::HitReact;
+	EventTag = bLethal ? CCTags::Events::Player::Death : CCTags::Events::Player::HitReact;
 
 	Payload.OptionalObject = OptionalParticleSystem;
 	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(PlayerCharacter, EventTag, Payload);
@@ -125,7 +140,19 @@ void UCC_BlueprintLibrary::SendDamageEventToPlayer(AActor* Target, const TSubcla
 	TargetASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
 }
 
-TArray<AActor*> UCC_BlueprintLibrary::HitBoxOverlapTest(AActor* AvatarActor, float HitBoxRadius, float HitBoxForwardOffset, float HitBoxElevationOffset, bool bDrawDebugs)
+void UCC_BlueprintLibrary::SendDamageEventToPlayers(TArray<AActor*> Targets,
+	const TSubclassOf<UGameplayEffect>& DamageEffect, FGameplayEventData& Payload, const FGameplayTag& DataTag,
+	float Damage, const FGameplayTag& EventTagOverride, UObject* OptionalParticleSystem)
+{
+	for (AActor* Target : Targets)
+	{
+		SendDamageEventToPlayer(Target, DamageEffect, Payload, DataTag, Damage, EventTagOverride, OptionalParticleSystem);
+	}
+}
+
+TArray<AActor*> UCC_BlueprintLibrary::HitBoxOverlapTest(AActor* AvatarActor, float HitBoxRadius,
+                                                        float HitBoxForwardOffset, float HitBoxElevationOffset,
+                                                        bool bDrawDebugs)
 {
 	if (!IsValid(AvatarActor))return TArray<AActor*>();
 	//初始化忽略列表：确保施法者自己不会被自己的攻击打中
@@ -148,10 +175,10 @@ TArray<AActor*> UCC_BlueprintLibrary::HitBoxOverlapTest(AActor* AvatarActor, flo
 		0.f, 0.f, HitBoxElevationOffset);
 
 	//执行物理场景重叠检测 使用可见性通道进行初步扫描
-	UWorld* World=GEngine->GetWorldFromContextObject(AvatarActor,EGetWorldErrorMode::LogAndReturnNull);
+	UWorld* World = GEngine->GetWorldFromContextObject(AvatarActor, EGetWorldErrorMode::LogAndReturnNull);
 	if (!IsValid(World)) return TArray<AActor*>();
 	World->OverlapMultiByChannel(OverlapResults, HitBoxLocation, FQuat::Identity, ECC_Visibility, Sphere,
-									  QueryParams, ResponseParams);
+	                             QueryParams, ResponseParams);
 
 	TArray<AActor*> ActorsHit;
 	for (const FOverlapResult& Result : OverlapResults)
@@ -165,17 +192,18 @@ TArray<AActor*> UCC_BlueprintLibrary::HitBoxOverlapTest(AActor* AvatarActor, flo
 
 	if (bDrawDebugs)
 	{
-		DrawHixBoxOverlapDebugs(AvatarActor,OverlapResults, HitBoxLocation,HitBoxRadius);
+		DrawHixBoxOverlapDebugs(AvatarActor, OverlapResults, HitBoxLocation, HitBoxRadius);
 	}
 
 	return ActorsHit;
 }
 
-void UCC_BlueprintLibrary::DrawHixBoxOverlapDebugs(const UObject* WorldContextObject,const TArray<FOverlapResult>& OverlapResults,
-	const FVector& HitBoxLocation,float HitBoxRadius)
+void UCC_BlueprintLibrary::DrawHixBoxOverlapDebugs(const UObject* WorldContextObject,
+                                                   const TArray<FOverlapResult>& OverlapResults,
+                                                   const FVector& HitBoxLocation, float HitBoxRadius)
 {
-	UWorld* World=GEngine->GetWorldFromContextObject(WorldContextObject,EGetWorldErrorMode::LogAndReturnNull);
-	if (!IsValid(World)) return ;
+	UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);
+	if (!IsValid(World)) return;
 	//绘制红色的攻击判定球体
 	DrawDebugSphere(World, HitBoxLocation, HitBoxRadius, 16, FColor::Red, false, 3.f);
 
@@ -192,7 +220,8 @@ void UCC_BlueprintLibrary::DrawHixBoxOverlapDebugs(const UObject* WorldContextOb
 }
 
 TArray<AActor*> UCC_BlueprintLibrary::ApplyKnockback(AActor* AvatarActor, const TArray<AActor*>& HitActors,
-	float InnerRadius, float OuterRadius, float LaunchForceMagnitude, float RotationAngle, bool bDrawDebugs)
+                                                     float InnerRadius, float OuterRadius, float LaunchForceMagnitude,
+                                                     float RotationAngle, bool bDrawDebugs)
 {
 	for (AActor* HitActor : HitActors)
 	{
@@ -217,11 +246,12 @@ TArray<AActor*> UCC_BlueprintLibrary::ApplyKnockback(AActor* AvatarActor, const 
 			const FVector2D LaunchForceRange(LaunchForceMagnitude, 0.f); // output range
 			LaunchForce = FMath::GetMappedRangeValueClamped(FalloffRange, LaunchForceRange, Distance);
 		}
-		if (bDrawDebugs) GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, FString::Printf(TEXT("LaunchForce: %f"), LaunchForce));
+		if (bDrawDebugs) GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red,
+		                                                  FString::Printf(TEXT("LaunchForce: %f"), LaunchForce));
 
 		FVector KnockbackForce = ToHitActor.GetSafeNormal();
 		KnockbackForce.Z = 0.f;
-		
+
 		// 计算一个垂直于KnockbackForce的右向量，并将KnockbackForce绕这个轴旋转指定的角度，以实现更自然的击退效果。
 		const FVector Right = KnockbackForce.RotateAngleAxis(90.f, FVector::UpVector);
 		//逆时针旋转回来 
@@ -230,9 +260,13 @@ TArray<AActor*> UCC_BlueprintLibrary::ApplyKnockback(AActor* AvatarActor, const 
 		if (bDrawDebugs)
 		{
 			UWorld* World = GEngine->GetWorldFromContextObject(AvatarActor, EGetWorldErrorMode::LogAndReturnNull);
-			DrawDebugDirectionalArrow(World, HitCharacterLocation, HitCharacterLocation + KnockbackForce, 100.f, FColor::Green, false, 3.f);
+			DrawDebugDirectionalArrow(World, HitCharacterLocation, HitCharacterLocation + KnockbackForce, 100.f,
+			                          FColor::Green, false, 3.f);
 		}
-
+		if (ACC_EnemyCharacter* EnemyCharacter = Cast<ACC_EnemyCharacter>(HitCharacter); IsValid(EnemyCharacter))
+		{
+			EnemyCharacter->StopMovementUntilLanded();
+		}
 		HitCharacter->LaunchCharacter(KnockbackForce, true, true);
 	}
 	return HitActors;

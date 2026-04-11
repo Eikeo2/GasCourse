@@ -5,6 +5,8 @@
 
 namespace CCTags
 {
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(None);
+
 	namespace SetByCaller
 	{
 		UE_DECLARE_GAMEPLAY_TAG_EXTERN(Projectile);
@@ -33,7 +35,7 @@ namespace CCTags
 			UE_DECLARE_GAMEPLAY_TAG_EXTERN(HitReact);
 			UE_DECLARE_GAMEPLAY_TAG_EXTERN(Death);
 		}
-		
+
 		namespace Enemy
 		{
 			UE_DECLARE_GAMEPLAY_TAG_EXTERN(HitReact);

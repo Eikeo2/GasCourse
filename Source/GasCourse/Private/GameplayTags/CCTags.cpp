@@ -2,6 +2,8 @@
 
 namespace CCTags
 {
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(None, "CCTags.None", "None");
+
 	namespace SetByCaller
 	{
 		UE_DEFINE_GAMEPLAY_TAG_COMMENT(Projectile, "CCTags.SetByCaller.Projectile",
@@ -26,13 +28,14 @@ namespace CCTags
 	namespace Events
 	{
 		UE_DEFINE_GAMEPLAY_TAG_COMMENT(KillScored, "CCTags.Events.KillScored", "Tag for the KillScored Event");
-		
+
 		namespace Player
 		{
-			UE_DEFINE_GAMEPLAY_TAG_COMMENT(HitReact, "CCTags.Events.Player.HitReact", "Tag for the Player HitReact Event")
+			UE_DEFINE_GAMEPLAY_TAG_COMMENT(HitReact, "CCTags.Events.Player.HitReact",
+			                               "Tag for the Player HitReact Event")
 			UE_DEFINE_GAMEPLAY_TAG_COMMENT(Death, "CCTags.Events.Player.Death", "Tag for the Player Death Event")
 		}
-		
+
 		namespace Enemy
 		{
 			UE_DEFINE_GAMEPLAY_TAG_COMMENT(HitReact, "CCTags.Events.Enemy.HitReact", "Tag for the Enemy React Event");
